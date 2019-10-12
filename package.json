@@ -1,0 +1,22 @@
+{
+  "name": "crash-log-cordova-plugin",
+  "version": "1.0.0",
+  "description": "save crash info to log file.",
+  "cordova": {
+    "id": "crash-log-cordova-plugin",
+    "platforms": [
+      "android"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shuto-cn/crash-log-cordova-plugin.git"
+  },
+  "keywords": [
+    "cordova",
+    "crash",
+    "log"
+  ],
+  "author": "shuto",
+  "license": "MIT"
+}
