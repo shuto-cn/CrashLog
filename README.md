@@ -6,4 +6,4 @@
 ionic cordova plugin add https://github.com/shuto-cn/CrashLog
 
 ## 卸载
-ionic cordova plugin crash-log-cordova-plugin
+ionic cordova plugin rm crash-log-cordova-plugin
