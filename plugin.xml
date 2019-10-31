@@ -3,9 +3,6 @@
   xmlns="http://apache.org/cordova/ns/plugins/1.0"
   xmlns:android="http://schemas.android.com/apk/res/android">
   <name>CrashLog</name>
-  <!-- js-module name="CrashLog" src="www/crash-log.js">
-    <clobbers target="CrashLog" />
-  </js-module -->
   <platform name="android">
     <config-file parent="/*" target="res/xml/config.xml">
       <feature name="CrashLog">
@@ -13,11 +10,22 @@
         <param name="onload" value="true" />
       </feature>
     </config-file>
-    <config-file target="AndroidManifest.xml" parent="/manifest">
+    <config-file parent="/manifest" target="AndroidManifest.xml">
       <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     </config-file>
-
     <source-file src="src/android/cn/shuto/crash/CrashLogPlugin.java" target-dir="src/cn/shuto/crash" />
     <source-file src="src/android/cn/shuto/crash/CrashHandler.java" target-dir="src/cn/shuto/crash" />
+  </platform>
+  <platform name="ios">
+    <config-file parent="/*" target="config.xml">
+      <feature name="CrashLog">
+        <param name="ios-package" value="CrashLogPlugin" />
+        <param name="onload" value="true" />
+      </feature>
+    </config-file>
+    <header-file src="src/ios/CrashLogPlugin.h" />
+    <source-file src="src/ios/CrashLogPlugin.m" />
+    <header-file src="src/ios/CrashHandler.h" />
+    <source-file src="src/ios/CrashHandler.m" />
   </platform>
 </plugin>
