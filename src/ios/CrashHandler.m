@@ -1,13 +1,9 @@
 #import "CrashHandler.h"
-//#include <libkern/OSAtomic.h>
 #include <execinfo.h>
 
 NSString * const UncaughtExceptionHandlerSignalExceptionName = @"UncaughtExceptionHandlerSignalExceptionName";
 NSString * const UncaughtExceptionHandlerSignalKey = @"UncaughtExceptionHandlerSignalKey";
 NSString * const UncaughtExceptionHandlerAddressesKey = @"UncaughtExceptionHandlerAddressesKey";
-
-//volatile int32_t UncaughtExceptionCount = 0;
-//const int32_t UncaughtExceptionMaximum = 10;
 
 const NSInteger UncaughtExceptionHandlerSkipAddressCount = 4;
 const NSInteger UncaughtExceptionHandlerReportAddressCount = 5;
@@ -17,23 +13,23 @@ const NSInteger UncaughtExceptionHandlerReportAddressCount = 5;
 NSDateFormatter *dateFormatter;
 
 + (NSArray *)backtrace {
-     void* callstack[128];
-     int frames = backtrace(callstack, 128);
-     char **strs = backtrace_symbols(callstack, frames);
+    void* callstack[128];
+    int frames = backtrace(callstack, 128);
+    char **strs = backtrace_symbols(callstack, frames);
 
-     int i;
-     NSMutableArray *backtrace = [NSMutableArray arrayWithCapacity:frames];
-     for (
-         i = UncaughtExceptionHandlerSkipAddressCount;
-         i < UncaughtExceptionHandlerSkipAddressCount +
-            UncaughtExceptionHandlerReportAddressCount;
+    int i;
+    NSMutableArray *backtrace = [NSMutableArray arrayWithCapacity:frames];
+    for (
+        i = UncaughtExceptionHandlerSkipAddressCount;
+        i < UncaughtExceptionHandlerSkipAddressCount +
+        UncaughtExceptionHandlerReportAddressCount;
         i++)
-     {
-         [backtrace addObject:[NSString stringWithUTF8String:strs[i]]];
-     }
-     free(strs);
+    {
+        [backtrace addObject:[NSString stringWithUTF8String:strs[i]]];
+    }
+    free(strs);
 
-     return backtrace;
+    return backtrace;
 }
 
 + (NSString *)applicationDocumentsDirectory {
@@ -51,7 +47,7 @@ NSDateFormatter *dateFormatter;
     UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"错误" message:@"很抱歉,程序出现异常,即将退出." preferredStyle:UIAlertControllerStyleAlert];
 
     UIAlertAction *sure =[UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-      dismissed = YES;
+        dismissed = YES;
     }];
 
     [alertController addAction:sure];
@@ -71,10 +67,10 @@ NSDateFormatter *dateFormatter;
     CFRunLoopRef runLoop = CFRunLoopGetCurrent();
     CFArrayRef allModes = CFRunLoopCopyAllModes(runLoop);
 
-    while (!dismissed)  {
-       for (NSString *mode in (__bridge NSArray *)allModes) {
-           CFRunLoopRunInMode((CFStringRef)mode, 0.001, false);
-       }
+    while (!dismissed) {
+        for (NSString *mode in (__bridge NSArray *)allModes) {
+            CFRunLoopRunInMode((CFStringRef)mode, 0.001, false);
+        }
     }
 
     CFRelease(allModes);
@@ -100,75 +96,63 @@ NSDateFormatter *dateFormatter;
 }
 
 - (void)saveLog:(NSException *)exception {
-     NSLog(@"崩溃日志文件==================================");
-     NSArray * arr = [exception callStackSymbols];
-     NSString * reason = [exception reason]; // // 崩溃的原因  可以有崩溃的原因(数组越界,字典nil,调用未知方法...)
-     NSString * name = [exception name];
-     NSString * url = [NSString stringWithFormat:@"exception:%@\nreason:\n%@\ncallStackSymbols:\n%@",name,reason,[arr componentsJoinedByString:@"\n"]];
-     NSString * path = [[CrashHandler applicationDocumentsDirectory] stringByAppendingPathComponent:[CrashHandler filename]];
-     NSLog(@"崩溃日志文件:%@", path);
-     [url writeToFile:path atomically:YES encoding:NSUTF8StringEncoding error:nil];
+    // NSLog(@"崩溃日志文件==================================");
+    // 异常的堆栈信息
+    NSArray *stackArray = [exception callStackSymbols];
+    // 出现异常的原因
+    NSString *reason = [exception reason];
+    // 异常名称
+    NSString *name = [exception name];
+    NSString *exceptionInfo = [NSString stringWithFormat:@"Exception reason：%@\nException name：%@\nException stack：%@",name, reason, stackArray];
+    NSLog(@"%@", exceptionInfo);
+    NSString * path = [[CrashHandler applicationDocumentsDirectory] stringByAppendingPathComponent:[CrashHandler filename]];
+    NSLog(@"崩溃日志文件:%@", path);
+    [exceptionInfo writeToFile:path atomically:YES encoding:NSUTF8StringEncoding error:nil];
 }
 
 @end
 
 void HandleException(NSException *exception) {
-//    int32_t exceptionCount = OSAtomicIncrement32(&UncaughtExceptionCount);
-//    if (exceptionCount > UncaughtExceptionMaximum) {
-//        return;
-//    }
-
-    NSArray *callStack = [CrashHandler backtrace];
-    NSMutableDictionary *userInfo =
-        [NSMutableDictionary dictionaryWithDictionary:[exception userInfo]];
-    [userInfo
-        setObject:callStack
-        forKey:UncaughtExceptionHandlerAddressesKey];
-
     [[[CrashHandler alloc] init]
-        performSelectorOnMainThread:@selector(handleException:)
-        withObject:
-            [NSException
-                exceptionWithName:[exception name]
-                reason:[exception reason]
-                userInfo:userInfo]
-        waitUntilDone:YES];
+      performSelectorOnMainThread:@selector(handleException:)
+      withObject: exception
+      waitUntilDone:YES];
+
 }
 
 void SignalHandler(int signal) {
-//    int32_t exceptionCount = OSAtomicIncrement32(&UncaughtExceptionCount);
-//    if (exceptionCount > UncaughtExceptionMaximum) {
-//        return;
-//    }
-
     NSMutableDictionary *userInfo =
-        [NSMutableDictionary
-            dictionaryWithObject:[NSNumber numberWithInt:signal]
-            forKey:UncaughtExceptionHandlerSignalKey];
+    [NSMutableDictionary
+      dictionaryWithObject:[NSNumber numberWithInt:signal]
+      forKey:UncaughtExceptionHandlerSignalKey];
 
     NSArray *callStack = [CrashHandler backtrace];
     [userInfo
-        setObject:callStack
-        forKey:UncaughtExceptionHandlerAddressesKey];
+      setObject:callStack
+      forKey:UncaughtExceptionHandlerAddressesKey];
 
     [[[CrashHandler alloc] init]
-        performSelectorOnMainThread:@selector(handleException:)
-        withObject:
-            [NSException
-                exceptionWithName:UncaughtExceptionHandlerSignalExceptionName
-                reason:
-                    [NSString stringWithFormat:
-                        NSLocalizedString(@"Signal %d was raised.", nil),
-                        signal]
-                userInfo:
-                    [NSDictionary
-                        dictionaryWithObject:[NSNumber numberWithInt:signal]
-                        forKey:UncaughtExceptionHandlerSignalKey]]
-        waitUntilDone:YES];
+      performSelectorOnMainThread:@selector(handleException:)
+      withObject:
+        [NSException
+          exceptionWithName:UncaughtExceptionHandlerSignalExceptionName
+          reason: [
+            NSString stringWithFormat:
+            NSLocalizedString(@"Signal %d was raised.", nil),
+            signal
+          ]
+          userInfo: [
+            NSDictionary
+            dictionaryWithObject:[NSNumber numberWithInt:signal]
+            forKey:UncaughtExceptionHandlerSignalKey
+          ]
+        ]
+      waitUntilDone:YES
+    ];
 }
 
 void RegistUncauthExceptionHandler(void) {
-    NSLog(@"崩溃日志文件============ install ======================");
+    NSLog(@"崩溃日志文件 ============ regist ======================");
     dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateFormat:@"yyyy-MM-dd-HH-mm-ss"];
     NSSetUncaughtExceptionHandler(&HandleException);
