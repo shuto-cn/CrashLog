@@ -13,7 +13,8 @@ public class CrashLogPlugin extends CordovaPlugin {
   public void initialize(CordovaInterface cordova, CordovaWebView webView) {
     super.initialize(cordova, webView);
     CrashHandler crashHandler = CrashHandler.getInstance();
-    crashHandler.init(cordova.getContext());
+//    crashHandler.init(cordova.getContext()); // 老版本里没有这个方法
+    crashHandler.init(cordova.getActivity().getApplicationContext());
   }
 
 }
